@@ -6,7 +6,7 @@ A comprehensive Docker image packed with essential DevOps tools for cloud infras
 
 ```bash
 # Pull the image
-docker pull yourusername/devops-toolkit:latest
+docker pull sabiut/devops-toolkit:latest
 
 # Run interactive shell
 docker run -it --rm devops-toolkit
