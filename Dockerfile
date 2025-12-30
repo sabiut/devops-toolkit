@@ -139,7 +139,7 @@ RUN curl -fsSL https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --
 
 # Install Hadolint (Dockerfile linter)
 RUN HADOLINT_VERSION=$(curl -s https://api.github.com/repos/hadolint/hadolint/releases/latest | jq -r '.tag_name') \
-    && ARCH=$(uname -m) \
+    && ARCH=$(uname -m | sed 's/aarch64/arm64/') \
     && curl -fsSL "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-${ARCH}" -o /usr/local/bin/hadolint \
     && chmod +x /usr/local/bin/hadolint
 
