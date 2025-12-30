@@ -1,8 +1,6 @@
 #!/bin/bash
 # Verify all DevOps tools are installed and working
 
-set -e
-
 echo "=== DevOps Toolkit - Tool Verification ==="
 echo ""
 
@@ -14,13 +12,13 @@ declare -A tools=(
     ["packer"]="packer version"
     ["ansible"]="ansible --version | head -1"
     ["aws"]="aws --version"
-    ["az"]="az version --output table"
+    ["az"]="az version 2>/dev/null | head -1"
     ["gcloud"]="gcloud version 2>/dev/null | head -1"
-    ["k9s"]="k9s version --short"
+    ["k9s"]="k9s version --short 2>/dev/null || k9s version 2>/dev/null | head -1"
     ["k3d"]="k3d version"
     ["gh"]="gh --version | head -1"
-    ["argocd"]="argocd version --client --short"
-    ["trivy"]="trivy version"
+    ["argocd"]="argocd version --client 2>/dev/null | head -1"
+    ["trivy"]="trivy version 2>/dev/null | head -1"
     ["hadolint"]="hadolint --version"
     ["git"]="git --version"
     ["python3"]="python3 --version"
@@ -38,10 +36,10 @@ for tool in "${!tools[@]}"; do
     if command -v "$tool" &> /dev/null; then
         version=$(eval "${tools[$tool]}" 2>/dev/null || echo "installed")
         echo "[OK] $tool: $version"
-        ((passed++))
+        passed=$((passed + 1))
     else
         echo "[FAIL] $tool: not found"
-        ((failed++))
+        failed=$((failed + 1))
     fi
 done
 
@@ -50,6 +48,8 @@ echo "=== Summary ==="
 echo "Passed: $passed"
 echo "Failed: $failed"
 
-if [ $failed -gt 0 ]; then
+if [ "$failed" -gt 0 ]; then
     exit 1
 fi
+
+echo "All tools verified successfully!"
