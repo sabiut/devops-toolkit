@@ -102,7 +102,8 @@ RUN curl -fsSL https://packages.cloud.google.com/apt/doc/apt-key.gpg | gpg --dea
 
 # Install k9s
 RUN K9S_VERSION=$(curl -s https://api.github.com/repos/derailed/k9s/releases/latest | jq -r '.tag_name') \
-    && curl -fsSL "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_amd64.tar.gz" -o /tmp/k9s.tar.gz \
+    && ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://github.com/derailed/k9s/releases/download/${K9S_VERSION}/k9s_Linux_${ARCH}.tar.gz" -o /tmp/k9s.tar.gz \
     && tar -xzf /tmp/k9s.tar.gz -C /usr/local/bin k9s \
     && chmod +x /usr/local/bin/k9s \
     && rm /tmp/k9s.tar.gz
@@ -124,7 +125,8 @@ RUN curl -fsSL https://cli.github.com/packages/githubcli-archive-keyring.gpg | d
 
 # Install ArgoCD CLI
 RUN ARGOCD_VERSION=$(curl -s https://api.github.com/repos/argoproj/argo-cd/releases/latest | jq -r '.tag_name') \
-    && curl -fsSL "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-amd64" -o /usr/local/bin/argocd \
+    && ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://github.com/argoproj/argo-cd/releases/download/${ARGOCD_VERSION}/argocd-linux-${ARCH}" -o /usr/local/bin/argocd \
     && chmod +x /usr/local/bin/argocd
 
 # Install Trivy (security scanner)
@@ -137,7 +139,8 @@ RUN curl -fsSL https://aquasecurity.github.io/trivy-repo/deb/public.key | gpg --
 
 # Install Hadolint (Dockerfile linter)
 RUN HADOLINT_VERSION=$(curl -s https://api.github.com/repos/hadolint/hadolint/releases/latest | jq -r '.tag_name') \
-    && curl -fsSL "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-x86_64" -o /usr/local/bin/hadolint \
+    && ARCH=$(uname -m) \
+    && curl -fsSL "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-${ARCH}" -o /usr/local/bin/hadolint \
     && chmod +x /usr/local/bin/hadolint
 
 # Copy configuration files
