@@ -1,0 +1,82 @@
+services:
+  devops-toolkit:
+    image: sabiut/devops-toolkit:latest
+    container_name: devops-toolkit
+    hostname: devops-toolkit
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    volumes:
+      # Mount current directory as workspace
+      - .:/workspace
+
+      # Mount Docker socket for Docker operations
+      - /var/run/docker.sock:/var/run/docker.sock
+
+      # Mount cloud credentials (read-only for security)
+      - ~/.aws:/root/.aws:ro
+      - ~/.kube:/root/.kube:ro
+      - ~/.config/gcloud:/root/.config/gcloud:ro
+      - ~/.azure:/root/.azure:ro
+
+      # Mount SSH keys and git config
+      - ~/.ssh:/root/.ssh:ro
+      - ~/.gitconfig:/root/.gitconfig:ro
+
+    environment:
+      - TERM=xterm-256color
+
+  # Lightweight version without cloud credentials
+  devops-toolkit-minimal:
+    image: sabiut/devops-toolkit:latest
+    container_name: devops-toolkit-minimal
+    hostname: devops-toolkit
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    profiles:
+      - minimal
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+    environment:
+      - TERM=xterm-256color
+
+  # AWS-focused configuration
+  devops-toolkit-aws:
+    image: sabiut/devops-toolkit:latest
+    container_name: devops-toolkit-aws
+    hostname: devops-toolkit-aws
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    profiles:
+      - aws
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.aws:/root/.aws:ro
+      - ~/.ssh:/root/.ssh:ro
+      - ~/.gitconfig:/root/.gitconfig:ro
+    environment:
+      - TERM=xterm-256color
+      - AWS_PAGER=
+
+  # Kubernetes-focused configuration
+  devops-toolkit-k8s:
+    image: sabiut/devops-toolkit:latest
+    container_name: devops-toolkit-k8s
+    hostname: devops-toolkit-k8s
+    stdin_open: true
+    tty: true
+    working_dir: /workspace
+    profiles:
+      - k8s
+    volumes:
+      - .:/workspace
+      - /var/run/docker.sock:/var/run/docker.sock
+      - ~/.kube:/root/.kube:ro
+      - ~/.ssh:/root/.ssh:ro
+      - ~/.gitconfig:/root/.gitconfig:ro
+    environment:
+      - TERM=xterm-256color

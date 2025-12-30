@@ -4,12 +4,32 @@ A comprehensive Docker image packed with essential DevOps tools for cloud infras
 
 ## Quick Start
 
+### Using the CLI Wrapper (Recommended)
+
+```bash
+# Install the wrapper script
+sudo cp devops-toolkit /usr/local/bin/
+sudo chmod +x /usr/local/bin/devops-toolkit
+
+# Start interactive shell with auto-mounted credentials
+devops-toolkit
+
+# Run a specific command
+devops-toolkit exec terraform plan
+devops-toolkit exec k9s
+
+# Update to latest image
+devops-toolkit update
+```
+
+### Using Docker Directly
+
 ```bash
 # Pull the image
 docker pull sabiut/devops-toolkit:latest
 
 # Run interactive shell
-docker run -it --rm devops-toolkit
+docker run -it --rm sabiut/devops-toolkit
 
 # Mount your project and credentials
 docker run -it --rm \
@@ -17,7 +37,20 @@ docker run -it --rm \
   -v ~/.aws:/root/.aws:ro \
   -v ~/.kube:/root/.kube:ro \
   -v ~/.ssh:/root/.ssh:ro \
-  devops-toolkit
+  sabiut/devops-toolkit
+```
+
+### Using Docker Compose
+
+```bash
+# Start with all credentials mounted
+docker compose run --rm devops-toolkit
+
+# AWS-focused environment
+docker compose --profile aws run --rm devops-toolkit-aws
+
+# Kubernetes-focused environment
+docker compose --profile k8s run --rm devops-toolkit-k8s
 ```
 
 ## Included Tools
@@ -30,6 +63,11 @@ docker run -it --rm \
 | Helm | Kubernetes package manager |
 | k9s | Terminal UI for Kubernetes |
 | k3d | Lightweight Kubernetes in Docker |
+| stern | Multi-pod log tailing |
+| kubectx | Quick context switching |
+| kubens | Quick namespace switching |
+| lazydocker | Docker terminal UI |
+| dive | Docker image layer explorer |
 
 ### Infrastructure as Code
 | Tool | Description |
@@ -69,46 +107,45 @@ docker run -it --rm \
 
 ### Kubernetes Management
 ```bash
-# Connect to your cluster
-docker run -it --rm \
-  -v ~/.kube:/root/.kube:ro \
-  devops-toolkit \
-  k9s
+# Launch k9s
+devops-toolkit exec k9s
+
+# Tail logs from multiple pods
+devops-toolkit exec stern my-app
+
+# Switch context and namespace
+devops-toolkit exec kubectx my-cluster
+devops-toolkit exec kubens my-namespace
 
 # Deploy with Helm
-docker run -it --rm \
-  -v ~/.kube:/root/.kube:ro \
-  -v $(pwd)/charts:/workspace \
-  devops-toolkit \
-  helm install myapp ./myapp-chart
+devops-toolkit exec helm install myapp ./myapp-chart
 ```
 
 ### Terraform Workflows
 ```bash
-# Initialize and apply
-docker run -it --rm \
-  -v $(pwd):/workspace \
-  -v ~/.aws:/root/.aws:ro \
-  devops-toolkit \
-  bash -c "terraform init && terraform plan"
+# Initialize and plan
+devops-toolkit exec "terraform init && terraform plan"
+
+# Apply changes
+devops-toolkit exec terraform apply
 ```
 
-### Ansible Playbooks
+### Docker Image Analysis
 ```bash
-docker run -it --rm \
-  -v $(pwd):/workspace \
-  -v ~/.ssh:/root/.ssh:ro \
-  devops-toolkit \
-  ansible-playbook -i inventory playbook.yml
+# Explore image layers
+devops-toolkit exec dive nginx:latest
+
+# Launch Docker TUI
+devops-toolkit exec lazydocker
 ```
 
 ### Security Scanning
 ```bash
 # Scan a container image
-docker run -it --rm \
-  -v /var/run/docker.sock:/var/run/docker.sock \
-  devops-toolkit \
-  trivy image nginx:latest
+devops-toolkit exec trivy image nginx:latest
+
+# Lint a Dockerfile
+devops-toolkit exec hadolint Dockerfile
 ```
 
 ## Aliases
@@ -145,7 +182,7 @@ See [config/.bashrc](config/.bashrc) for the full list.
 
 ```bash
 # Clone the repository
-git clone https://github.com/yourusername/devops-toolkit.git
+git clone https://github.com/sabiut/devops-toolkit.git
 cd devops-toolkit
 
 # Build the image

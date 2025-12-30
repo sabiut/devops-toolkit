@@ -1,0 +1,156 @@
+#!/bin/bash
+# DevOps Toolkit - Shell wrapper for easy container usage
+# Install: sudo cp devops-toolkit /usr/local/bin/ && sudo chmod +x /usr/local/bin/devops-toolkit
+
+IMAGE="sabiut/devops-toolkit:latest"
+CONTAINER_NAME="devops-toolkit-session"
+
+show_help() {
+    cat << EOF
+DevOps Toolkit - A comprehensive DevOps environment in a container
+
+Usage: devops-toolkit [COMMAND] [OPTIONS]
+
+Commands:
+    shell, sh       Start an interactive shell (default)
+    exec <cmd>      Execute a command in the container
+    update          Pull the latest image
+    verify          Verify all tools are installed
+    version         Show version information
+    help            Show this help message
+
+Options:
+    -w, --workdir   Mount current directory as workspace (default: enabled)
+    -c, --creds     Mount cloud credentials (default: enabled)
+    --no-workdir    Don't mount current directory
+    --no-creds      Don't mount cloud credentials
+
+Examples:
+    devops-toolkit                      # Start interactive shell
+    devops-toolkit exec terraform plan  # Run terraform plan
+    devops-toolkit exec k9s             # Launch k9s
+    devops-toolkit --no-creds shell     # Shell without credentials
+
+EOF
+}
+
+# Default options
+MOUNT_WORKDIR=true
+MOUNT_CREDS=true
+COMMAND="shell"
+EXEC_CMD=""
+
+# Parse arguments
+while [[ $# -gt 0 ]]; do
+    case $1 in
+        shell|sh)
+            COMMAND="shell"
+            shift
+            ;;
+        exec)
+            COMMAND="exec"
+            shift
+            EXEC_CMD="$*"
+            break
+            ;;
+        update)
+            COMMAND="update"
+            shift
+            ;;
+        verify)
+            COMMAND="verify"
+            shift
+            ;;
+        version)
+            COMMAND="version"
+            shift
+            ;;
+        help|--help|-h)
+            show_help
+            exit 0
+            ;;
+        -w|--workdir)
+            MOUNT_WORKDIR=true
+            shift
+            ;;
+        --no-workdir)
+            MOUNT_WORKDIR=false
+            shift
+            ;;
+        -c|--creds)
+            MOUNT_CREDS=true
+            shift
+            ;;
+        --no-creds)
+            MOUNT_CREDS=false
+            shift
+            ;;
+        *)
+            echo "Unknown option: $1"
+            show_help
+            exit 1
+            ;;
+    esac
+done
+
+# Build docker run arguments
+DOCKER_ARGS="-it --rm"
+DOCKER_ARGS="$DOCKER_ARGS --hostname devops-toolkit"
+DOCKER_ARGS="$DOCKER_ARGS --name $CONTAINER_NAME-$$"
+
+# Mount workspace
+if [ "$MOUNT_WORKDIR" = true ]; then
+    DOCKER_ARGS="$DOCKER_ARGS -v $(pwd):/workspace"
+fi
+
+# Mount credentials if they exist
+if [ "$MOUNT_CREDS" = true ]; then
+    # AWS
+    [ -d "$HOME/.aws" ] && DOCKER_ARGS="$DOCKER_ARGS -v $HOME/.aws:/root/.aws:ro"
+
+    # Kubernetes
+    [ -d "$HOME/.kube" ] && DOCKER_ARGS="$DOCKER_ARGS -v $HOME/.kube:/root/.kube:ro"
+
+    # GCP
+    [ -d "$HOME/.config/gcloud" ] && DOCKER_ARGS="$DOCKER_ARGS -v $HOME/.config/gcloud:/root/.config/gcloud:ro"
+
+    # Azure
+    [ -d "$HOME/.azure" ] && DOCKER_ARGS="$DOCKER_ARGS -v $HOME/.azure:/root/.azure:ro"
+
+    # SSH keys
+    [ -d "$HOME/.ssh" ] && DOCKER_ARGS="$DOCKER_ARGS -v $HOME/.ssh:/root/.ssh:ro"
+
+    # Git config
+    [ -f "$HOME/.gitconfig" ] && DOCKER_ARGS="$DOCKER_ARGS -v $HOME/.gitconfig:/root/.gitconfig:ro"
+fi
+
+# Mount Docker socket for Docker-in-Docker operations
+if [ -S /var/run/docker.sock ]; then
+    DOCKER_ARGS="$DOCKER_ARGS -v /var/run/docker.sock:/var/run/docker.sock"
+fi
+
+# Execute command
+case $COMMAND in
+    shell)
+        eval "docker run $DOCKER_ARGS $IMAGE"
+        ;;
+    exec)
+        if [ -z "$EXEC_CMD" ]; then
+            echo "Error: No command specified for exec"
+            exit 1
+        fi
+        eval "docker run $DOCKER_ARGS $IMAGE $EXEC_CMD"
+        ;;
+    update)
+        echo "Pulling latest image..."
+        docker pull "$IMAGE"
+        ;;
+    verify)
+        eval "docker run $DOCKER_ARGS $IMAGE /usr/local/scripts/verify-tools.sh"
+        ;;
+    version)
+        echo "DevOps Toolkit"
+        echo "Image: $IMAGE"
+        docker run --rm "$IMAGE" cat /etc/os-release | grep PRETTY_NAME
+        ;;
+esac

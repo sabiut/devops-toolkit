@@ -143,6 +143,40 @@ RUN HADOLINT_VERSION=$(curl -s https://api.github.com/repos/hadolint/hadolint/re
     && curl -fsSL "https://github.com/hadolint/hadolint/releases/download/${HADOLINT_VERSION}/hadolint-Linux-${ARCH}" -o /usr/local/bin/hadolint \
     && chmod +x /usr/local/bin/hadolint
 
+# Install stern (multi-pod log tailing)
+RUN STERN_VERSION=$(curl -s https://api.github.com/repos/stern/stern/releases/latest | jq -r '.tag_name') \
+    && ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://github.com/stern/stern/releases/download/${STERN_VERSION}/stern_${STERN_VERSION#v}_linux_${ARCH}.tar.gz" -o /tmp/stern.tar.gz \
+    && tar -xzf /tmp/stern.tar.gz -C /usr/local/bin stern \
+    && chmod +x /usr/local/bin/stern \
+    && rm /tmp/stern.tar.gz
+
+# Install kubectx and kubens (context/namespace switching)
+RUN KUBECTX_VERSION=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | jq -r '.tag_name') \
+    && ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubectx_${KUBECTX_VERSION}_linux_${ARCH}.tar.gz" -o /tmp/kubectx.tar.gz \
+    && curl -fsSL "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubens_${KUBECTX_VERSION}_linux_${ARCH}.tar.gz" -o /tmp/kubens.tar.gz \
+    && tar -xzf /tmp/kubectx.tar.gz -C /usr/local/bin kubectx \
+    && tar -xzf /tmp/kubens.tar.gz -C /usr/local/bin kubens \
+    && chmod +x /usr/local/bin/kubectx /usr/local/bin/kubens \
+    && rm /tmp/kubectx.tar.gz /tmp/kubens.tar.gz
+
+# Install lazydocker (Docker TUI)
+RUN LAZYDOCKER_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | jq -r '.tag_name') \
+    && ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://github.com/jesseduffield/lazydocker/releases/download/${LAZYDOCKER_VERSION}/lazydocker_${LAZYDOCKER_VERSION#v}_Linux_${ARCH}.tar.gz" -o /tmp/lazydocker.tar.gz \
+    && tar -xzf /tmp/lazydocker.tar.gz -C /usr/local/bin lazydocker \
+    && chmod +x /usr/local/bin/lazydocker \
+    && rm /tmp/lazydocker.tar.gz
+
+# Install dive (Docker image explorer)
+RUN DIVE_VERSION=$(curl -s https://api.github.com/repos/wagoodman/dive/releases/latest | jq -r '.tag_name') \
+    && ARCH=$(dpkg --print-architecture) \
+    && curl -fsSL "https://github.com/wagoodman/dive/releases/download/${DIVE_VERSION}/dive_${DIVE_VERSION#v}_linux_${ARCH}.tar.gz" -o /tmp/dive.tar.gz \
+    && tar -xzf /tmp/dive.tar.gz -C /usr/local/bin dive \
+    && chmod +x /usr/local/bin/dive \
+    && rm /tmp/dive.tar.gz
+
 # Copy configuration files
 COPY config/.bashrc /root/.bashrc
 COPY config/.vimrc /root/.vimrc
