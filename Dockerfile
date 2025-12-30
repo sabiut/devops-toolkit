@@ -153,7 +153,7 @@ RUN STERN_VERSION=$(curl -s https://api.github.com/repos/stern/stern/releases/la
 
 # Install kubectx and kubens (context/namespace switching)
 RUN KUBECTX_VERSION=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releases/latest | jq -r '.tag_name') \
-    && ARCH=$(dpkg --print-architecture) \
+    && ARCH=$(uname -m | sed 's/aarch64/arm64/') \
     && curl -fsSL "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubectx_${KUBECTX_VERSION}_linux_${ARCH}.tar.gz" -o /tmp/kubectx.tar.gz \
     && curl -fsSL "https://github.com/ahmetb/kubectx/releases/download/${KUBECTX_VERSION}/kubens_${KUBECTX_VERSION}_linux_${ARCH}.tar.gz" -o /tmp/kubens.tar.gz \
     && tar -xzf /tmp/kubectx.tar.gz -C /usr/local/bin kubectx \
@@ -163,7 +163,7 @@ RUN KUBECTX_VERSION=$(curl -s https://api.github.com/repos/ahmetb/kubectx/releas
 
 # Install lazydocker (Docker TUI)
 RUN LAZYDOCKER_VERSION=$(curl -s https://api.github.com/repos/jesseduffield/lazydocker/releases/latest | jq -r '.tag_name') \
-    && ARCH=$(dpkg --print-architecture) \
+    && ARCH=$(uname -m | sed 's/aarch64/arm64/') \
     && curl -fsSL "https://github.com/jesseduffield/lazydocker/releases/download/${LAZYDOCKER_VERSION}/lazydocker_${LAZYDOCKER_VERSION#v}_Linux_${ARCH}.tar.gz" -o /tmp/lazydocker.tar.gz \
     && tar -xzf /tmp/lazydocker.tar.gz -C /usr/local/bin lazydocker \
     && chmod +x /usr/local/bin/lazydocker \
