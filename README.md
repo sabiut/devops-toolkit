@@ -155,35 +155,6 @@ docker build -t devops-toolkit .
 docker run --rm devops-toolkit /usr/local/scripts/verify-tools.sh
 ```
 
-## CI/CD Pipeline
-
-This repository includes a GitHub Actions workflow that:
-
-1. Lints the Dockerfile with Hadolint
-2. Builds multi-architecture images (amd64, arm64)
-3. Pushes to Docker Hub on main branch
-4. Runs security scans with Trivy
-5. Updates Docker Hub description
-
-### Required Secrets
-
-Set these in your GitHub repository settings:
-
-- `DOCKERHUB_USERNAME`: Your Docker Hub username
-- `DOCKERHUB_TOKEN`: Docker Hub access token
-
-## Customization
-
-Fork this repository and modify the Dockerfile to add your own tools or configurations:
-
-```dockerfile
-# Add custom tools
-RUN apt-get update && apt-get install -y your-tool
-
-# Add custom scripts
-COPY scripts/your-script.sh /usr/local/bin/
-```
-
 ## License
 
 MIT License - feel free to use and modify for your needs.
