@@ -2,6 +2,13 @@
 
 A comprehensive Docker image packed with essential DevOps tools for cloud infrastructure management, container orchestration, and CI/CD workflows.
 
+[![Docker Pulls](https://img.shields.io/docker/pulls/sabiut/devops-toolkit)](https://hub.docker.com/r/sabiut/devops-toolkit)
+[![Docker Image Size](https://img.shields.io/docker/image-size/sabiut/devops-toolkit/latest)](https://hub.docker.com/r/sabiut/devops-toolkit)
+
+## Documentation
+
+For detailed documentation, use cases, and CI/CD integration guides, visit the **[Wiki](https://github.com/sabiut/devops-toolkit/wiki)**.
+
 ## Quick Start
 
 ### Using the CLI Wrapper (Recommended)
